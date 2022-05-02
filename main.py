@@ -1,15 +1,3 @@
-#####
-
-# Add the alarm
-
-"""
-To switch off the pc
-        elif "log off" in statement or "sign out" in statement:
-            speak("Ok , your pc will log off in 10 sec make sure you exit from all applications")
-            subprocess.call(["shutdown", "/l"])
-"""
-#####
-
 import pyttsx3
 import time
 import speech_recognition as sr
@@ -17,13 +5,11 @@ from datetime import datetime
 from random import choice
 from utils import opening_text , available_lang
 from State_machine import State_machine
-from os_ops import open_calculator, open_camera, open_cmd, open_notepad , logout
+from os_ops import open_calculator, open_camera, open_cmd, open_notepad , logout , take_photo
 from online_ops import find_my_ip , get_location , search_on_wikipedia , play_on_youtube , search_on_google , \
     send_whatsapp_message , send_email , get_random_joke , get_random_advice , get_latest_news , get_weather_report , \
     get_translation
-from pprint import pprint
 
-import ecapture
 
 USERNAME = "Matteo"
 BOT_NAME = "Tech-girl"
@@ -55,6 +41,15 @@ start_computing_time = int(round(time.time() * 1000))
 # Save the time limit to deactivate the listening state
 deactivate_listening_time = 8
 
+# Create a variable to keep the starting time of the timer
+starting_timer_time = int(round(time.time() * 1000))
+
+# Create a variable to keep the timer duration required (in minutes)
+timer_duration = 0
+
+# Create a variable to keep if the timer is on or not
+timer_on = False
+
 
 def speak(text):
     """
@@ -80,20 +75,23 @@ def greet_user():
     else:
         speak(f"It's late {USERNAME}, you should rest")
 
-    speak(f"I am {BOT_NAME}. I'm on!")
+    speak(f"I'm on!")
 
 
 # Listen what the user is saying
 def listen(r):
-    # Take the mic as source
-    with sr.Microphone() as source:
-        print('Listening....')
-        # If the audio is greater than the threshold I'm saying something,
-        # otherwise it's just a long silence
-        r.pause_threshold = 3
-        # Take the audio object to convert in a string
-        r.adjust_for_ambient_noise(source)
-        audio = r.listen(source=source , timeout=deactivate_listening_time)
+    try:
+        # Take the mic as source
+        with sr.Microphone() as source:
+            print('Listening....')
+            # If the audio is greater than the threshold I'm saying something,
+            # otherwise it's just a long silence
+            r.pause_threshold = 3
+            # Take the audio object to convert in a string
+            r.adjust_for_ambient_noise(source)
+            audio = r.listen(source=source , timeout=deactivate_listening_time)
+    except sr.WaitTimeoutError as e:
+        return None
 
     print("End listening")
     return audio
@@ -172,6 +170,7 @@ def take_user_input():
                 exit()
         except Exception:
             speak('Sorry, I could not understand. Could you please say that again?')
+            start_listening_time = int(round(time.time() * 1000))
             query = ''
 
         return query
@@ -198,6 +197,7 @@ def take_user_input():
 
         except Exception:
             speak('Sorry, I could not understand. Could you please say that again?')
+            start_computing_time = int(round(time.time() * 1000))
             query = ''
 
         return query
@@ -209,7 +209,11 @@ def do_action(query):
     :param query: is what the user said
     """
     global state_assistant
+    global start_listening_time
     global start_computing_time
+    global starting_timer_time
+    global timer_duration
+    global timer_on
 
     # If there is nothing to execute, exit
     if state_assistant != State_machine.COMPUTING:
@@ -375,20 +379,34 @@ def do_action(query):
     elif 'who are you' in query or 'your name' in query or 'chi sei' in query or 'tuo nome' in query:
         speak("I'm Tech-girl, your personal assistant.\n"
               " Tell me if you need something and I'll try to do it for you")
-        state_assistant = State_machine.LISTENING
 
     elif 'what can you do' in query or 'cosa sai fare' in query:
         speak("I can open your apps, I can check the news or the weather for you, I can search for some topics"
               "on Wikipedia or on Google, I can also translate some phrases and, finally, I can make jokes")
-        state_assistant = State_machine.LISTENING
 
     elif "log off" in query or "sign out" in query or 'logout' in query or 'disconnetti' in query:
         speak("Ok , your pc will log off in 10 sec make sure you exit from all applications")
         logout()
-        state_assistant = State_machine.WAITING
+
+    elif "take a photo" in query or "scatta foto" in query:
+        speak("Say cheseeeeeee!")
+        take_photo()
+
+    elif "set timer" in query or "imposta timer" in query:
+        speak("Insert the duration in minutes")
+
+        try:
+            timer_duration = input()
+            timer_duration = float(timer_duration)
+            # Set the initial time
+            starting_timer_time = time.localtime().tm_min
+            timer_on = True
+        except:
+            speak("That's not a number")
 
     else:
         speak("Command not found! Repeat please")
+        start_listening_time = int(round(time.time() * 1000))
         state_assistant = State_machine.LISTENING
         return
 
@@ -408,4 +426,17 @@ if __name__ == '__main__':
         print(query)
         # Perform the action required
         do_action(query)
+
+        if timer_on:
+            # Check if the timer is over
+            if time.localtime().tm_min - starting_timer_time > timer_duration:
+                engine.setProperty('volume', 4.0)
+                speak("Time is up!.")
+                time.sleep(0.5)
+                speak("Time is up!.")
+                time.sleep(0.1)
+                speak("Time is up!.")
+                engine.setProperty('volume', 1.0)
+                timer_on = False
+
 
