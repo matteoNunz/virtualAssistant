@@ -1,5 +1,18 @@
 #####
 # There is a problem when from COMPUTING going in take_user_action -> it's like it doesn't work
+
+# Add the alarm
+
+# Add "Who are you?"
+
+# Add "What can you do?"
+
+"""
+To switch off the pc
+        elif "log off" in statement or "sign out" in statement:
+            speak("Ok , your pc will log off in 10 sec make sure you exit from all applications")
+            subprocess.call(["shutdown", "/l"])
+"""
 #####
 
 import pyttsx3
@@ -7,16 +20,20 @@ import time
 import speech_recognition as sr
 from datetime import datetime
 from random import choice
-from utils import opening_text
+from utils import opening_text , available_lang
 from State_machine import State_machine
 from os_ops import open_calculator, open_camera, open_cmd, open_notepad
 from online_ops import find_my_ip , get_location , search_on_wikipedia , play_on_youtube , search_on_google , \
-    send_whatsapp_message , send_email , get_random_joke , get_random_advice , get_latest_news , get_weather_report
+    send_whatsapp_message , send_email , get_random_joke , get_random_advice , get_latest_news , get_weather_report , \
+    get_translation
 from pprint import pprint
+
+import ecapture
 
 USERNAME = "Matteo"
 BOT_NAME = "Tech-girl"
 
+# Sapi5 is a Microsoft Text to speech engine used for voice recognition
 engine = pyttsx3.init('sapi5')
 
 # Set Rate: speed of reproduction
@@ -81,7 +98,7 @@ def listen(r):
         r.pause_threshold = 3
         # Take the audio object to convert in a string
         r.adjust_for_ambient_noise(source)
-        audio = r.listen(source=source, timeout=deactivate_listening_time)
+        audio = r.listen(source=source , timeout=deactivate_listening_time)
 
     print("End listening")
     return audio
@@ -103,7 +120,6 @@ def take_user_input():
 
     if state_assistant == State_machine.WAITING:
         print("Listening in waiting")
-
         audio = listen(r)
 
         try:
@@ -330,6 +346,37 @@ def do_action(query):
         engine.setProperty('rate', 200)
         speak("For your convenience, I am printing it on the screen sir.")
         print(f"Description: {weather}\nTemperature: {temperature}\nFeels like: {feels_like}")
+
+    elif 'translate' in query or 'translator' in query or 'traduttore' in query or 'traduci' in query:
+        speak("From which language?")
+        start_computing_time = int(round(time.time() * 1000))
+        from_lang = take_user_input().lower()
+
+        if available_lang[from_lang] is not None:
+            from_lang = available_lang[from_lang]
+        else:
+            speak("I didn't get it.")
+            state_assistant = State_machine.LISTENING
+            return
+
+        speak("To which language?")
+        start_computing_time = int(round(time.time() * 1000))
+        to_lang = take_user_input().lower()
+
+        if available_lang[to_lang] is not None:
+            to_lang = available_lang[to_lang]
+        else:
+            speak("I didn't get it.")
+            state_assistant = State_machine.LISTENING
+            return
+
+        speak("Which is the phrase?")
+        phrase = take_user_input().lower()
+
+        translation = get_translation(phrase , from_lang , to_lang)
+        speak(f"The translation is {translation}")
+        print(f"The translation is {translation}")
+
 
     else:
         speak("Command not found! Repeat please")

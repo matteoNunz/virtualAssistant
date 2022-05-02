@@ -3,6 +3,7 @@ import socket
 import wikipedia
 import pywhatkit as kit
 from email.message import EmailMessage
+import translators as ts
 import smtplib
 
 import geocoder
@@ -13,6 +14,9 @@ OPEN_WEATHER_APP_ID = "d425c0fbf463e60f7f9c98a052693815"
 
 EMAIL = "MAIL"
 PASSWORD = "PASSWORD"
+
+# Set the language. The default is en
+wikipedia.set_lang('it')
 
 
 def find_my_ip():
@@ -50,7 +54,6 @@ def get_location():
 def search_on_wikipedia(query):
     # Search on wikipedia what the user said. Take just the first sentence
     results = wikipedia.summary(f'{query}', sentences=2)
-    print(results)
     return results
 
 
@@ -117,4 +120,10 @@ def get_weather_report(city):
     temperature = res["main"]["temp"]
     feels_like = res["main"]["feels_like"]
     return weather, f"{temperature}℃", f"{feels_like}℃"
+
+
+def get_translation(phrase , from_lang , to_lang):
+
+    translation = ts.google(phrase, from_language=from_lang, to_language=to_lang)
+    return translation
 

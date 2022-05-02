@@ -4,3 +4,10 @@ opening_text = [
     "Just a second sir.",
     "Get it sir."
 ]
+
+available_lang = {
+    "italiano": 'it',
+    "inglese": 'en',
+    "tedesco": 'de',
+    "spagnolo": 'es'
+}
