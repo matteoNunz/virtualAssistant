@@ -1,11 +1,6 @@
 #####
-# There is a problem when from COMPUTING going in take_user_action -> it's like it doesn't work
 
 # Add the alarm
-
-# Add "Who are you?"
-
-# Add "What can you do?"
 
 """
 To switch off the pc
@@ -377,6 +372,15 @@ def do_action(query):
         speak(f"The translation is {translation}")
         print(f"The translation is {translation}")
 
+    elif 'who are you' in query or 'your name' in query or 'chi sei' in query or 'tuo nome' in query:
+        speak("I'm Tech-girl, your personal assistant.\n"
+              " Tell me if you need something and I'll try to do it for you")
+        state_assistant = State_machine.LISTENING
+
+    elif 'what can you do' in query or 'cosa sai fare' in query:
+        speak("I can open your apps, I can check the news or the weather for you, I can search for some topics"
+              "on Wikipedia or on Google, I can also translate some phrases and, finally, I can make jokes")
+        state_assistant = State_machine.LISTENING
 
     else:
         speak("Command not found! Repeat please")
