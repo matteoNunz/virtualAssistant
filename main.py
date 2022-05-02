@@ -17,7 +17,7 @@ from datetime import datetime
 from random import choice
 from utils import opening_text , available_lang
 from State_machine import State_machine
-from os_ops import open_calculator, open_camera, open_cmd, open_notepad
+from os_ops import open_calculator, open_camera, open_cmd, open_notepad , logout
 from online_ops import find_my_ip , get_location , search_on_wikipedia , play_on_youtube , search_on_google , \
     send_whatsapp_message , send_email , get_random_joke , get_random_advice , get_latest_news , get_weather_report , \
     get_translation
@@ -381,6 +381,11 @@ def do_action(query):
         speak("I can open your apps, I can check the news or the weather for you, I can search for some topics"
               "on Wikipedia or on Google, I can also translate some phrases and, finally, I can make jokes")
         state_assistant = State_machine.LISTENING
+
+    elif "log off" in query or "sign out" in query or 'logout' in query or 'disconnetti' in query:
+        speak("Ok , your pc will log off in 10 sec make sure you exit from all applications")
+        logout()
+        state_assistant = State_machine.WAITING
 
     else:
         speak("Command not found! Repeat please")

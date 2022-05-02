@@ -21,3 +21,8 @@ def open_camera():
 
 def open_calculator():
     sp.Popen(paths['calculator'])
+
+
+def logout():
+    os.system("shutdown /l")
+    
