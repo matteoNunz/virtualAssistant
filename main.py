@@ -11,6 +11,7 @@ from online_ops import find_my_ip , get_location , search_on_wikipedia , play_on
     get_translation
 
 
+# Set the name of the user and of the assistant
 USERNAME = "Matteo"
 BOT_NAME = "Tech-girl"
 
@@ -27,7 +28,7 @@ engine.setProperty('volume', 1.0)
 voices = engine.getProperty('voices')
 engine.setProperty('voice', voices[1].id)
 
-# Set the starting state of the assistant
+# Set the starting state to the assistant
 state_assistant = State_machine.WAITING
 
 # Create a variable to keep in memory the time state LISTENING is activated, in order to disable it
@@ -38,7 +39,7 @@ start_listening_time = int(round(time.time() * 1000))
 #   if the user says nothing
 start_computing_time = int(round(time.time() * 1000))
 
-# Save the time limit to deactivate the listening state
+# Save the time limit to deactivate the listening state (in seconds)
 deactivate_listening_time = 8
 
 # Create a variable to keep the starting time of the timer
@@ -60,7 +61,6 @@ def speak(text):
     engine.runAndWait()
 
 
-# Greet the user
 def greet_user():
     """
     Greets the user according to the time
@@ -78,31 +78,37 @@ def greet_user():
     speak(f"I'm on!")
 
 
-# Listen what the user is saying
 def listen(r):
+    """
+    Method used to listen what the user is saying (if he is saying something)
+    :param r: is the recognizer
+    :return: the audio object that could be converted
+    """
     try:
         # Take the mic as source
         with sr.Microphone() as source:
             print('Listening....')
             # If the audio is greater than the threshold I'm saying something,
-            # otherwise it's just a long silence
+            #   otherwise it's just a long silence
             r.pause_threshold = 3
-            # Take the audio object to convert in a string
+            # Listen the environment noise in order to reduce and correct it when
+            #   listening the source (remove the noise)
             r.adjust_for_ambient_noise(source)
+            # Take the audio object to convert in a string
             audio = r.listen(source=source , timeout=deactivate_listening_time)
     except sr.WaitTimeoutError as e:
+        # If the time timeout is over, return
         return None
 
     print("End listening")
     return audio
 
 
-# Takes Input from User
 def take_user_input():
     """
     Takes user input, recognizes it using Speech Recognition module and converts it into text
     """
-    # Consider the global variable
+    # Take the global variable
     global state_assistant
     global start_listening_time
     global start_computing_time
@@ -111,12 +117,14 @@ def take_user_input():
     # Initiate the recognizer
     r = sr.Recognizer()
 
+    # If the state of the assistant is WAITING
     if state_assistant == State_machine.WAITING:
         print("Listening in waiting")
+        # Listen the user
         audio = listen(r)
 
         try:
-            # Recognize the phrase
+            # Convert the object audio in a string containing the phrase the user said
             query = r.recognize_google(audio, language='it-IT')
 
             # This is the command for the offline recognition, but it doesn't work
@@ -128,18 +136,23 @@ def take_user_input():
                 # Enable the interaction with the assistant
                 print("Phrase recognized")
                 speak("Ask me sir")
+                # Change the state of the assistant in LISTENING
                 state_assistant = State_machine.LISTENING
+                # Set the init time of that phase (LISTENING)
                 start_listening_time = int(round(time.time() * 1000))
                 print("Going in listening")
         except Exception:
+            # If the phrase is not recognize, do nothing
+            # The phrase is not recognize also if there was silence
             query = ''
         return query
 
+    # If the state of the assistant is LISTENING
     elif state_assistant == State_machine.LISTENING:
         # Listen what the user is saying
         audio = listen(r)
 
-        # If the time is exceed
+        # If the time is exceed (now - init time of the phase is bigger than the threshold)
         if int(round(time.time() * 1000)) - start_listening_time > deactivate_listening_time * 1000:
             # Came back to the WAITING state
             state_assistant = State_machine.WAITING
@@ -147,20 +160,22 @@ def take_user_input():
             return ''
 
         # If the assistant listens something
-
         try:
             print(audio)
             print('Recognizing...')
             # Recognize the phrase
             query = r.recognize_google(audio, language='it-IT')
 
-            # If in the phrase there aren't 'exit' or 'stop', quit
+            # If in the phrase there isn't 'stop'
             if 'stop' not in query:
+                # Say a random phrase
                 speak(choice(opening_text))
                 # Change the state to COMPUTING
                 state_assistant = State_machine.COMPUTING
                 print("Going to computing")
+            # Else if the user said 'stop', quit
             else:
+                # Take the current hour
                 hour = datetime.now().hour
                 if (hour >= 21) or (hour < 6):
                     speak("Good night sir, take care!")
@@ -169,7 +184,9 @@ def take_user_input():
                 # End the application
                 exit()
         except Exception:
+            # If the assistant didn't recognize the phrase said
             speak('Sorry, I could not understand. Could you please say that again?')
+            # Restart the initial phase time
             start_listening_time = int(round(time.time() * 1000))
             query = ''
 
@@ -177,18 +194,18 @@ def take_user_input():
 
     elif state_assistant == State_machine.COMPUTING:
         print("In take user input with state computing")
+        # Listen what the user is saying
         audio = listen(r)
 
         # If the time is exceed (x 2 just because it could be longer)
         if int(round(time.time() * 1000)) - start_computing_time > deactivate_listening_time * 1000 * 2:
             # Came back to the WAITING state
-            print(int(round(time.time() * 1000)) - start_computing_time)
+            # print(int(round(time.time() * 1000)) - start_computing_time)
             state_assistant = State_machine.WAITING
             print("Going to waiting")
             return ''
 
         # If the assistant listens something
-
         try:
             print(audio)
             print('Recognizing...')
@@ -197,6 +214,7 @@ def take_user_input():
 
         except Exception:
             speak('Sorry, I could not understand. Could you please say that again?')
+            # Re-initialize the starting computing phase time
             start_computing_time = int(round(time.time() * 1000))
             query = ''
 
@@ -208,6 +226,7 @@ def do_action(query):
     Perform the action specified by the user
     :param query: is what the user said
     """
+    # Take the global variables
     global state_assistant
     global start_listening_time
     global start_computing_time
@@ -215,10 +234,11 @@ def do_action(query):
     global timer_duration
     global timer_on
 
-    # If there is nothing to execute, exit
+    # If the phase is not COMPUTING (nothing to execute), return
     if state_assistant != State_machine.COMPUTING:
         return
 
+    # If the user said 'open notepad' or 'blocco note'
     if 'open notepad' in query or 'blocco note' in query:
         open_notepad()
 
@@ -249,16 +269,17 @@ def do_action(query):
 
     elif 'wikipedia' in query:
         speak('What do you want to search on Wikipedia, sir?')
-        # Update the starting listening time
+        # Update the starting computing time
         start_computing_time = int(round(time.time() * 1000))
+        # Listen what the user is saying
         search_query = take_user_input().lower()
         print("Searching " + str(search_query))
 
+        # If the user said nothing or something bad happened
         if len(search_query) == 0:
             speak("Sorry, I couldn't understand")
             return
 
-        state_assistant = State_machine.WAITING
         results = search_on_wikipedia(search_query)
         speak(f"According to Wikipedia, {results}")
         speak("For your convenience, I am printing it on the screen sir.")
@@ -266,13 +287,16 @@ def do_action(query):
 
     elif 'youtube' in query:
         speak('What do you want to play on Youtube, sir?')
-        # Update the starting listening time
+        # Update the starting computing time
         start_computing_time = int(round(time.time() * 1000))
         video = take_user_input().lower()
         print("Searching " + str(video))
+
+        # If the user said nothing or something bad happened
         if len(video) == 0:
             speak("Sorry, I couldn't understand")
             return
+
         play_on_youtube(video)
 
     elif 'search on google' in query:
@@ -283,13 +307,18 @@ def do_action(query):
         search_on_google(search_query)
 
     elif "send whatsapp message" in query:
-        speak(
-            'On what number should I send the message sir? Please enter in the console: ')
+        speak('On what number should I send the message sir? Please enter in the console: ')
         number = input("Enter the number: ")
         speak("What is the message sir?")
-        message = take_user_input().lower()
-        # Update the starting listening time
+        # Update the starting computing time
         start_computing_time = int(round(time.time() * 1000))
+        message = take_user_input().lower()
+
+        # If the user said nothing or something bad happened
+        if len(message) == 0:
+            speak("Sorry, I couldn't understand")
+            return
+
         send_whatsapp_message(number, message)
         speak("I've sent the message sir.")
 
@@ -298,11 +327,11 @@ def do_action(query):
         speak("On what email address do I send sir? Please enter in the console: ")
         receiver_address = input("Enter email address: ")
         speak("What should be the subject sir?")
-        # Update the starting listening time
+        # Update the starting computing time
         start_computing_time = int(round(time.time() * 1000))
         subject = take_user_input().capitalize()
         speak("What is the message sir?")
-        # Update the starting listening time
+        # Update the starting computing time
         start_computing_time = int(round(time.time() * 1000))
         message = take_user_input().capitalize()
         if send_email(receiver_address, subject, message):
@@ -326,8 +355,10 @@ def do_action(query):
 
     elif 'news' in query or 'notizia' in query or 'notizie' in query:
         speak(f"I'm reading out the latest news headlines, sir")
+        # Reduce the speed to better understand what the assistant is saying
         engine.setProperty('rate', 140)
         speak(get_latest_news())
+        # Reset the correct speed
         engine.setProperty('rate', 200)
         speak("For your convenience, I am printing it on the screen sir.")
         print(*get_latest_news(), sep='\n')
@@ -351,6 +382,7 @@ def do_action(query):
         start_computing_time = int(round(time.time() * 1000))
         from_lang = take_user_input().lower()
 
+        # If the language is between the available ones
         if available_lang[from_lang] is not None:
             from_lang = available_lang[from_lang]
         else:
@@ -362,6 +394,7 @@ def do_action(query):
         start_computing_time = int(round(time.time() * 1000))
         to_lang = take_user_input().lower()
 
+        # If the language is between the available ones
         if available_lang[to_lang] is not None:
             to_lang = available_lang[to_lang]
         else:
@@ -400,6 +433,7 @@ def do_action(query):
             timer_duration = float(timer_duration)
             # Set the initial time
             starting_timer_time = time.localtime().tm_min
+            # Set the timer is on
             timer_on = True
         except:
             speak("That's not a number")
@@ -411,11 +445,13 @@ def do_action(query):
         return
 
     # Command executed correctly
+    # Turn back to WAITING state
     state_assistant = State_machine.WAITING
     print("Going to waiting")
 
 
 if __name__ == '__main__':
+    # Greeting the user
     greet_user()
 
     while True:
@@ -430,6 +466,7 @@ if __name__ == '__main__':
         if timer_on:
             # Check if the timer is over
             if time.localtime().tm_min - starting_timer_time > timer_duration:
+                # Increase the volume for the alarm message
                 engine.setProperty('volume', 4.0)
                 speak("Time is up!.")
                 time.sleep(0.5)
@@ -437,6 +474,7 @@ if __name__ == '__main__':
                 time.sleep(0.1)
                 speak("Time is up!.")
                 engine.setProperty('volume', 1.0)
+                # Deactivate the timer on flag
                 timer_on = False
 
 
