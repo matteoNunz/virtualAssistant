@@ -280,8 +280,11 @@ def do_action(query):
             speak("Sorry, I couldn't understand")
             return
 
+        engine.setProperty('rate', 150)
+
         results = search_on_wikipedia(search_query)
         speak(f"According to Wikipedia, {results}")
+        engine.setProperty('rate', 200)
         speak("For your convenience, I am printing it on the screen sir.")
         print(results)
 
@@ -299,7 +302,7 @@ def do_action(query):
 
         play_on_youtube(video)
 
-    elif 'search on google' in query:
+    elif 'search on google' in query or 'google' in query:
         speak('What do you want to search on Google, sir?')
         # Update the starting listening time
         start_computing_time = int(round(time.time() * 1000))
@@ -342,14 +345,18 @@ def do_action(query):
     elif 'joke' in query or 'scherzo' in query:
         speak(f"Hope you like this one sir")
         joke = get_random_joke()
+        engine.setProperty('rate', 170)
         speak(joke)
+        engine.setProperty('rate', 200)
         speak("For your convenience, I am printing it on the screen sir.")
         print(joke)
 
     elif "advice" in query or 'consiglio' in query:
         speak(f"Here's an advice for you, sir")
         advice = get_random_advice()
+        engine.setProperty('rate', 170)
         speak(advice)
+        engine.setProperty('rate', 200)
         speak("For your convenience, I am printing it on the screen sir.")
         print(advice)
 
@@ -444,7 +451,7 @@ def do_action(query):
         state_assistant = State_machine.LISTENING
         return
 
-    # Command executed correctly
+    # If here the command has been executed correctly
     # Turn back to WAITING state
     state_assistant = State_machine.WAITING
     print("Going to waiting")
