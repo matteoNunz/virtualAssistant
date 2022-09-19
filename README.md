@@ -2,11 +2,11 @@
 
 Simple implementation of a virtual assistant.
 
-### The assistant functioning is divided in 3 main phases:
+### The assistant functioning is divided into 3 main phases:
 
 - **Waiting phase**: the assistant is waiting for the user input and the starting word is **okay**;
-- **Listening phase**: the assistant now start to listen what the user is saying;
-- **Computing phase**: the assistant execute the user instruction and, if necessary, ask more details to the user going back to the **listening phase**
+- **Listening phase**: the assistant start listening what the user is saying;
+- **Computing phase**: the assistant executes the user instructions and, if necessary, ask more details to the user going back to the **listening phase**.
 
 ### Available commands
 #### Online operations
@@ -18,7 +18,7 @@ Simple implementation of a virtual assistant.
 - Send a WhatsApp message or an email;
 - Ask for a joke;
 - Ask for a random advice;
-- Ask for the newest news;
+- Ask for the latest news;
 - Ask for the weather;
 - Translate a phrase.
 
