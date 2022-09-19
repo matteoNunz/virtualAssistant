@@ -1,5 +1,5 @@
 # LIst containing all the possible phrases the assistant could
-#       use when it understand the command said by the user
+#       use when it understands the command said by the user
 opening_text = [
     "Cool, I'm on it sir.",
     "Okay sir, I'm working on it.",

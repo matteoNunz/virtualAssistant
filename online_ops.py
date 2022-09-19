@@ -9,8 +9,8 @@ import smtplib
 import geocoder
 import folium
 
-NEWS_API_KEY = "f74e553ce2aa42e29029f1e2043b147b"
-OPEN_WEATHER_APP_ID = "d425c0fbf463e60f7f9c98a052693815"
+NEWS_API_KEY = "INSERT YOUR KEY"
+OPEN_WEATHER_APP_ID = "INSERT YOUR ID"
 
 EMAIL = "MAIL"
 PASSWORD = "PASSWORD"
@@ -45,7 +45,7 @@ def get_location():
     # from g take latitude and longitude
     my_address = g.latlng
 
-    # Shoe the location found in the map
+    # Show the location found in the map
     my_map = folium.Map(location = my_address,
                         zoom_start = 12)
 
@@ -58,7 +58,7 @@ def get_location():
     folium.Marker(my_address,
                   popup = "Milan").add_to(my_map)
 
-    # Save the map file as an html
+    # Save the map file as a html
     my_map.save("my_map.html")
 
     return g , my_address
@@ -106,7 +106,7 @@ def send_whatsapp_message(number, message):
 def send_email(receiver_address, subject, message):
     """
     Method used to send an email.
-    Important: to work it's necessary to enable the "access from non secure sources"
+    Important: to work it's necessary to enable the "access from non-secure sources"
     :param receiver_address: is the receiver address
     :param subject: is the object of the main
     :param message: is the body of the mail
@@ -145,7 +145,7 @@ def get_random_joke():
 
 def get_random_advice():
     """
-    Method used to get a random advice making a request to a web site
+    Method used to get a random advice making a request to a website
     :return: the string with the advice
     """
     # Make the request
@@ -193,4 +193,3 @@ def get_translation(phrase , from_lang , to_lang):
     """
     translation = ts.google(phrase, from_language=from_lang, to_language=to_lang)
     return translation
-

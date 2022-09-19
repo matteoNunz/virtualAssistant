@@ -43,7 +43,7 @@ def open_calculator():
 
 def logout():
     """
-    Method used to logout from the account (it will close all the open application)
+    Method used to log-out from the account (it will close all the open application)
     :return: nothing
     """
     os.system("shutdown /l")
@@ -61,7 +61,7 @@ def take_photo():
     # Reading the input using the camera
     result, image = cam.read()
 
-    # If image will detected without any error, show result
+    # If image will be detected without any error, show result
     if result:
         # Showing result, it takes frame name and image output
         cv2.imshow("PictureTest", image)

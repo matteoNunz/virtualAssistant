@@ -152,7 +152,7 @@ def take_user_input():
         # Listen what the user is saying
         audio = listen(r)
 
-        # If the time is exceed (now - init time of the phase is bigger than the threshold)
+        # If the time is exceeded (now - init time of the phase is bigger than the threshold)
         if int(round(time.time() * 1000)) - start_listening_time > deactivate_listening_time * 1000:
             # Came back to the WAITING state
             state_assistant = State_machine.WAITING
@@ -197,7 +197,7 @@ def take_user_input():
         # Listen what the user is saying
         audio = listen(r)
 
-        # If the time is exceed (x 2 just because it could be longer)
+        # If the time is exceeded (x 2 just because it could be longer)
         if int(round(time.time() * 1000)) - start_computing_time > deactivate_listening_time * 1000 * 2:
             # Came back to the WAITING state
             # print(int(round(time.time() * 1000)) - start_computing_time)
@@ -325,7 +325,7 @@ def do_action(query):
         send_whatsapp_message(number, message)
         speak("I've sent the message sir.")
 
-    # It works if you enable the access from less secure app in the google account
+    # It works if you enable the access from less secure app in the Google account
     elif "send an email" in query:
         speak("On what email address do I send sir? Please enter in the console: ")
         receiver_address = input("Enter email address: ")
